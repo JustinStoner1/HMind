@@ -60,8 +60,9 @@ class HMind:
             error = 0
             for agent in self.agents:
                 path = self.pathToTargetNetX(agent, target)
-                error += agent.loss(agent, target, path)
-                order = (path, agent, target)
+                loss = agent.loss(agent, target, path)
+                error += loss
+                order = (path, agent, target, loss)
                 plan.append(order)
             option = (plan, error)
             options.append(option)
@@ -78,9 +79,12 @@ class HMind:
         # assign orders to agents from plan
         bestPlanOrders = bestPlan[0]
         for order in bestPlanOrders:
-            agent = order[1]
-            agent.path = order[0]
-            agent.target = order[2]
+            agent = order[1]  # agent
+            target = order[2]  # target
+            path = order[0] # path from agent to target
+            if agent.loss(agent, target, path, loss) >= agent.threshold:
+                agent.target = target
+                agent.path = path
 
     def addAgent(self, agent):
         """
