@@ -85,6 +85,9 @@ class HMind:
             if agent.loss(agent, target, path, loss) >= agent.threshold:
                 agent.target = target
                 agent.path = path
+            else:
+                if agent.home is not None:
+                    agent.path = self.pathToTargetNetX(agent.location, agent.home)
 
     def addAgent(self, agent):
         """
