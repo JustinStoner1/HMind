@@ -28,7 +28,7 @@ class HMind:
         """
         self.navGraph = GraphBuilder.grabGraphDataFromTxt(filePath)
 
-    def pathToTargetNetX(self, loc1, loc2):
+    def pathToTargetNetX(self, node1, node2):
         """
         Finds a series of nodes that when traversed, leads leads from loc1 to loc2
         Uses A* with the heuristic function given in the HMind init with weights being cost
@@ -36,7 +36,7 @@ class HMind:
         :param loc2:
         :return:
         """
-        shortestPath = networkx.astar_path(self.navGraph, loc1, loc2, heuristic=self.heuristic, weight='cost')
+        shortestPath = networkx.astar_path(self.navGraph, node1, node2, heuristic=self.heuristic, weight='cost')
         return shortestPath
 
     def coordinate(self):
@@ -59,7 +59,7 @@ class HMind:
             plan = []
             error = 0
             for agent in self.agents:
-                path = self.pathToTargetNetX(agent, target)
+                path = self.pathToTargetNetX(agent.node, target.node)
                 loss = agent.loss(agent, target, path)
                 error += loss
                 order = (path, agent, target, loss)
@@ -82,12 +82,17 @@ class HMind:
             agent = order[1]  # agent
             target = order[2]  # target
             path = order[0] # path from agent to target
-            if agent.loss(agent, target, path, loss) >= agent.threshold:
+            #agent.target = target
+            #agent.path = path
+            if agent.loss(agent, target, path) <= agent.threshold:
                 agent.target = target
                 agent.path = path
             else:
-                if agent.home is not None:
-                    agent.path = self.pathToTargetNetX(agent.location, agent.home)
+                try:
+                    if hasattr(agent, 'home') and agent.home is not None:
+                        agent.path = self.pathToTargetNetX(agent.node, agent.home)
+                except:
+                    print()
 
     def addAgent(self, agent):
         """
@@ -140,7 +145,7 @@ class HMind:
 
         for agent in self.agents:
             nearest = None
-            minDist = self.distance(navNodes[0], agent.location)
+            minDist = 999999#self.distance(navNodes[0], agent.location)
             for node in navNodes:
                 dist = self.distance(node, agent.location)
                 if dist < minDist:
@@ -150,7 +155,7 @@ class HMind:
 
         for target in self.targets:
             nearest = None
-            minDist = self.distance(navNodes[0], target.location)
+            minDist = 999999#self.distance(navNodes[0], target.location)
             for node in navNodes:
                 dist = self.distance(node, target.location)
                 if dist < minDist:

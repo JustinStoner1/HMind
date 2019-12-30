@@ -16,7 +16,7 @@ def lossATK(agent, target, path):
 
 
 def heuristic(vec1, vec2):
-    squaredDistance = ((vec1[2] - vec2[2]) ** 2)*1  # 10
+    squaredDistance = ((vec1[2] - vec2[2]) ** 2)*1  # 0.5  # 10
     squaredDistance += ((vec1[1] - vec2[1]) ** 2)*1
     squaredDistance += ((vec1[0] - vec2[0]) ** 2)*1
     return numpy.sqrt(squaredDistance)
@@ -39,14 +39,14 @@ def distanceEuclid3D(vec1, vec2):
 def writeOrders(HMind):
     for agent in HMind.agents:
         try:
-            file = open(orderPath + "\\" + str(agent.name) + ".txt", "r")
+            file = open(orderPath + "\\in_" + str(agent.name) + ".txt", "r")
             lines = file.readlines()
             firstLine = lines[0]
             status = firstLine.split(":")[0]
             if status != "online":
                 HMind.removeAgent(agent)
             file.close()
-            file = open(orderPath + "\\" + str(agent.name) + ".txt", "w")
+            file = open(orderPath + "\\in_" + str(agent.name) + ".txt", "w")
             output = ""
             for vec in agent.path:
                 vecS = str(vec)[:-1]
@@ -60,7 +60,7 @@ def writeOrders(HMind):
 
 
 def updateAgentData():
-    agentFiles = glob.glob(orderPath + "\\" + 'ace*')
+    agentFiles = glob.glob(orderPath + "\\" + "out_ace*")
 
     for agentFile in agentFiles:
         agentFile = open(agentFile, 'r')
