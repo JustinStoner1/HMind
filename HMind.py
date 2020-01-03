@@ -1,5 +1,6 @@
 import enum
 from dataclasses import dataclass
+from itertools import permutations
 
 import numpy
 
@@ -32,8 +33,8 @@ class HMind:
         """
         Finds a series of nodes that when traversed, leads leads from loc1 to loc2
         Uses A* with the heuristic function given in the HMind init with weights being cost
-        :param loc1:
-        :param loc2:
+        :param node1:
+        :param node2:
         :return:
         """
         shortestPath = networkx.astar_path(self.navGraph, node1, node2, heuristic=self.heuristic, weight='cost')
@@ -54,7 +55,45 @@ class HMind:
         self.assignClosestNodesToActors()
 
         # generate possible plans
-        options = []
+        plans = [list(zip(self.agents, p)) for p in permutations(self.targets)]
+        print(plans)
+
+        bestPlan = plans[0]
+        leastError = 0
+        for pair in bestPlan:
+            agent = pair[0]
+            target = pair[1]
+            path = self.pathToTargetNetX(agent.node, target.node)
+            loss = agent.loss(agent, target, path)
+            leastError += loss
+        #leastError = 9999999
+        for plan in plans:
+            error = 0
+            for pair in plan:
+                agent = pair[0]
+                target = pair[1]
+                path = self.pathToTargetNetX(agent.node, target.node)
+                loss = agent.loss(agent, target, path)
+                error += loss
+            if error < leastError:
+                leastError = error
+                bestPlan = plan
+
+        for pairs in bestPlan:
+            agent = pairs[0]  # agent
+            target = pairs[1]  # target
+            path = self.pathToTargetNetX(agent.node, target.node)
+            if agent.loss(agent, target, path) <= agent.threshold:
+                agent.target = target
+                agent.path = path
+            else:
+                try:
+                    if hasattr(agent, 'home') and agent.home is not None:
+                        agent.path = self.pathToTargetNetX(agent.node, agent.home)
+                except:
+                    print()
+
+        '''
         for target in self.targets:
             plan = []
             error = 0
@@ -66,7 +105,7 @@ class HMind:
                 plan.append(order)
             option = (plan, error)
             options.append(option)
-
+        
         # find best plan
         bestPlan = options[0]
         leastError = bestPlan[1]
@@ -75,6 +114,7 @@ class HMind:
             if error < leastError:
                 leastError = error
                 bestPlan = plan
+        
 
         # assign orders to agents from plan
         bestPlanOrders = bestPlan[0]
@@ -93,6 +133,8 @@ class HMind:
                         agent.path = self.pathToTargetNetX(agent.node, agent.home)
                 except:
                     print()
+        '''
+
 
     def addAgent(self, agent):
         """
@@ -213,7 +255,7 @@ class Agent:
     target: Target  # target of agent
     path: []  # list of nodes to visit
 
-    def __init__(self, iD, name, purpose,  location, loss, threshold):
+    def __init__(self, iD, name, purpose, location, loss, threshold):
         """
         Creates an agent will the provided parameters
         :param iD: ID of agent
