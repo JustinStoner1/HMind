@@ -1,4 +1,6 @@
 import time
+import numpy
+import enum
 
 from HMind import *
 import glob
@@ -93,10 +95,8 @@ while True:
     updateEntityData()
     #updateAgentData()
     HMind.coordinate()
-    for agent in HMind.agents:
-        print(agent.target)
     writeOrders(HMind)
-    time.sleep(0.5)#0.1
+    time.sleep(0.2)#0.1
 
 '''
 def updateAgentData():

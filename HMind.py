@@ -1,12 +1,7 @@
-import enum
 from dataclasses import dataclass
 from itertools import permutations
-
-import numpy
-
 import GraphBuilder
 import networkx
-import heapq
 
 @dataclass
 class HMind:
@@ -33,9 +28,9 @@ class HMind:
         """
         Finds a series of nodes that when traversed, leads leads from loc1 to loc2
         Uses A* with the heuristic function given in the HMind init with weights being cost
-        :param node1:
-        :param node2:
-        :return:
+        :param node1: start node
+        :param node2: goal node
+        :return: a list of nodes where the first element is the start node and the last is the goal node; elements in between form the path
         """
         shortestPath = networkx.astar_path(self.navGraph, node1, node2, heuristic=self.heuristic, weight='cost')
         return shortestPath
@@ -51,12 +46,13 @@ class HMind:
             print("not enough actors")
             return
 
+
+
         # update agents closest nodes
         self.assignClosestNodesToActors()
 
         # generate possible plans
         plans = [list(zip(self.agents, p)) for p in permutations(self.targets)]
-        print(plans)
 
         bestPlan = plans[0]
         leastError = 0
@@ -66,7 +62,6 @@ class HMind:
             path = self.pathToTargetNetX(agent.node, target.node)
             loss = agent.loss(agent, target, path)
             leastError += loss
-        #leastError = 9999999
         for plan in plans:
             error = 0
             for pair in plan:
